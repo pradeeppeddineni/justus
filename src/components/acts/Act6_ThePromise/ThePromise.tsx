@@ -1,6 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as THREE from 'three';
+import {
+  Scene,
+  PerspectiveCamera,
+  WebGLRenderer,
+  BufferGeometry,
+  BufferAttribute,
+  PointsMaterial,
+  Points,
+  SphereGeometry,
+  MeshBasicMaterial,
+  Mesh,
+} from 'three';
+import type { WebGLRenderer as WebGLRendererType } from 'three';
 import { GlowText } from '../../shared/GlowText';
 import { TextInput } from '../../shared/TextInput';
 import type { JustUsConfig } from '../../../config/types';
@@ -22,7 +34,7 @@ export function ThePromise({ config, player, send, onMessage, onComplete }: TheP
   const [starName, setStarName] = useState<{ p1Word: string; p2Word: string } | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const rendererRef = useRef<WebGLRendererType | null>(null);
   const frameRef = useRef<number>(0);
 
   // Listen for star naming result
@@ -67,11 +79,11 @@ export function ThePromise({ config, player, send, onMessage, onComplete }: TheP
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    const scene = new Scene();
+    const camera = new PerspectiveCamera(75, width / height, 0.1, 1000);
     camera.position.z = 5;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
@@ -80,7 +92,7 @@ export function ThePromise({ config, player, send, onMessage, onComplete }: TheP
 
     // Stars
     const starCount = promiseConfig.star_field_density;
-    const geometry = new THREE.BufferGeometry();
+    const geometry = new BufferGeometry();
     const positions = new Float32Array(starCount * 3);
     const sizes = new Float32Array(starCount);
 
@@ -91,10 +103,10 @@ export function ThePromise({ config, player, send, onMessage, onComplete }: TheP
       sizes[i] = Math.random() * 2 + 0.5;
     }
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geometry.setAttribute('position', new BufferAttribute(positions, 3));
+    geometry.setAttribute('size', new BufferAttribute(sizes, 1));
 
-    const material = new THREE.PointsMaterial({
+    const material = new PointsMaterial({
       color: 0xfff0f0,
       size: 0.05,
       sizeAttenuation: true,
@@ -102,28 +114,28 @@ export function ThePromise({ config, player, send, onMessage, onComplete }: TheP
       opacity: 0.8,
     });
 
-    const stars = new THREE.Points(geometry, material);
+    const stars = new Points(geometry, material);
     scene.add(stars);
 
     // "Their" star — brighter, colored
-    const specialGeometry = new THREE.SphereGeometry(0.03, 8, 8);
-    const specialMaterial = new THREE.MeshBasicMaterial({
+    const specialGeometry = new SphereGeometry(0.03, 8, 8);
+    const specialMaterial = new MeshBasicMaterial({
       color: 0xff2d55,
       transparent: true,
       opacity: 0.9,
     });
-    const specialStar = new THREE.Mesh(specialGeometry, specialMaterial);
+    const specialStar = new Mesh(specialGeometry, specialMaterial);
     specialStar.position.set(0, 0.5, 0);
     scene.add(specialStar);
 
     // Glow around special star
-    const glowGeometry = new THREE.SphereGeometry(0.08, 8, 8);
-    const glowMaterial = new THREE.MeshBasicMaterial({
+    const glowGeometry = new SphereGeometry(0.08, 8, 8);
+    const glowMaterial = new MeshBasicMaterial({
       color: 0xff6b8a,
       transparent: true,
       opacity: 0.15,
     });
-    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    const glow = new Mesh(glowGeometry, glowMaterial);
     glow.position.copy(specialStar.position);
     scene.add(glow);
 

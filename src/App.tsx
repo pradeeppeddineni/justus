@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, lazy, Suspense } from 'react';
 import type { JustUsConfig } from './config/types';
 import { useSync } from './hooks/useSync';
 import { useAct } from './hooks/useAct';
@@ -11,21 +11,21 @@ import { GhostFragment } from './components/Shell/GhostFragment';
 import { ShakeReveal } from './components/Shell/ShakeReveal';
 import type { ActPhase } from './core/StateMachine';
 
-// Act components
-import { Invitation } from './components/acts/Act0_Invitation/Invitation';
-import { TheLock } from './components/acts/Act1_TheLock/TheLock';
-import { KnowMe } from './components/acts/Act2_KnowMe/KnowMe';
-import { LieDetector } from './components/acts/Act2_5_LieDetector/LieDetector';
-import { ThroughYourEyes } from './components/acts/Act3_ThroughYourEyes/ThroughYourEyes';
-import { Heartbeat } from './components/acts/Act3_5_Heartbeat/Heartbeat';
-import { TheUnsaid } from './components/acts/Act4_TheUnsaid/TheUnsaid';
-import { RewriteHistory } from './components/acts/Act4_5_RewriteHistory/RewriteHistory';
-import { ComeCloser } from './components/acts/Act5_ComeCloser/ComeCloser';
-import { Heat } from './components/acts/Act5_5_Heat/Heat';
-import { OurMoment } from './components/acts/Act5_75_OurMoment/OurMoment';
-import { ThePromise } from './components/acts/Act6_ThePromise/ThePromise';
-import { TheGlitch } from './components/acts/Act7_TheGlitch/TheGlitch';
-import { SaveScreen } from './components/acts/SaveScreen/SaveScreen';
+// Lazy-loaded act components — each gets its own chunk
+const Invitation = lazy(() => import('./components/acts/Act0_Invitation/Invitation').then(m => ({ default: m.Invitation })));
+const TheLock = lazy(() => import('./components/acts/Act1_TheLock/TheLock').then(m => ({ default: m.TheLock })));
+const KnowMe = lazy(() => import('./components/acts/Act2_KnowMe/KnowMe').then(m => ({ default: m.KnowMe })));
+const LieDetector = lazy(() => import('./components/acts/Act2_5_LieDetector/LieDetector').then(m => ({ default: m.LieDetector })));
+const ThroughYourEyes = lazy(() => import('./components/acts/Act3_ThroughYourEyes/ThroughYourEyes').then(m => ({ default: m.ThroughYourEyes })));
+const Heartbeat = lazy(() => import('./components/acts/Act3_5_Heartbeat/Heartbeat').then(m => ({ default: m.Heartbeat })));
+const TheUnsaid = lazy(() => import('./components/acts/Act4_TheUnsaid/TheUnsaid').then(m => ({ default: m.TheUnsaid })));
+const RewriteHistory = lazy(() => import('./components/acts/Act4_5_RewriteHistory/RewriteHistory').then(m => ({ default: m.RewriteHistory })));
+const ComeCloser = lazy(() => import('./components/acts/Act5_ComeCloser/ComeCloser').then(m => ({ default: m.ComeCloser })));
+const Heat = lazy(() => import('./components/acts/Act5_5_Heat/Heat').then(m => ({ default: m.Heat })));
+const OurMoment = lazy(() => import('./components/acts/Act5_75_OurMoment/OurMoment').then(m => ({ default: m.OurMoment })));
+const ThePromise = lazy(() => import('./components/acts/Act6_ThePromise/ThePromise').then(m => ({ default: m.ThePromise })));
+const TheGlitch = lazy(() => import('./components/acts/Act7_TheGlitch/TheGlitch').then(m => ({ default: m.TheGlitch })));
+const SaveScreen = lazy(() => import('./components/acts/SaveScreen/SaveScreen').then(m => ({ default: m.SaveScreen })));
 
 interface AppProps {
   config: JustUsConfig;
@@ -152,18 +152,20 @@ export default function App({ config }: AppProps) {
         <ConnectionScreen status={status} partnerConnected={partnerConnected} />
       )}
 
-      {showSaveScreen ? (
-        <SaveScreen config={config} />
-      ) : (
-        <TransitionLayer actKey={currentAct}>
-          <div className="relative w-full h-full">
-            {renderAct()}
+      <Suspense fallback={null}>
+        {showSaveScreen ? (
+          <SaveScreen config={config} />
+        ) : (
+          <TransitionLayer actKey={currentAct}>
+            <div className="relative w-full h-full">
+              {renderAct()}
 
-            {/* Ghost fragment for current act */}
-            {ghostFragment && <GhostFragment fragment={ghostFragment} />}
-          </div>
-        </TransitionLayer>
-      )}
+              {/* Ghost fragment for current act */}
+              {ghostFragment && <GhostFragment fragment={ghostFragment} />}
+            </div>
+          </TransitionLayer>
+        )}
+      </Suspense>
 
       {!showSaveScreen && (
         <ProgressDots totalActs={getTotalActs()} currentIndex={getActIndex()} />

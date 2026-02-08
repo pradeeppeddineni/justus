@@ -1,4 +1,3 @@
-import React from "react";
 import type { RewriteEntry } from "../core/SessionStore";
 import { KeepsakeCard, COLORS, FONTS } from "./KeepsakeCard";
 

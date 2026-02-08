@@ -52,7 +52,7 @@ export function ShakeReveal({ currentAct, currentPhase, shakeMoments }: ShakeRev
     setTimeout(() => setRevealed(false), 4000);
   }, [hintVisible, revealed, currentAct]);
 
-  useShake(handleShake, { threshold: 12, cooldown: 2000 });
+  useShake({ onShake: handleShake, threshold: 12 });
 
   // Bonus content per act
   const getBonusContent = (act: string): string => {

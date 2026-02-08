@@ -4,6 +4,17 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-three': ['three'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-export': ['html-to-image', 'jszip', 'file-saver'],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

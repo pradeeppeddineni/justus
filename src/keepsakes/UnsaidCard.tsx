@@ -1,4 +1,3 @@
-import React from "react";
 import type { UnsaidData } from "../core/SessionStore";
 import { KeepsakeCard, COLORS, FONTS } from "./KeepsakeCard";
 
