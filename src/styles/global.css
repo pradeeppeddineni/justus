@@ -1,0 +1,120 @@
+@import "tailwindcss";
+@import "./typography.css";
+@import "./animations.css";
+
+/*
+ * Theme CSS Variables
+ * Set dynamically from config.yaml via configLoader.ts
+ * These are the ONLY colors used throughout the app.
+ */
+:root {
+  --color-primary: #8B0000;
+  --color-secondary: #1a0a0a;
+  --color-accent: #FF2D55;
+  --color-glow: #FF6B8A;
+  --color-background: #0D0000;
+  --color-text: #FFF0F0;
+  --color-particle: #FF2D55;
+  --color-subtle: #2A1015;
+
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Cormorant Garamond', serif;
+
+  /* Device safe areas — overridden per player from config */
+  --safe-area-top: 59px;
+  --safe-area-bottom: 34px;
+  --corner-radius: 55px;
+
+  /* Timing tokens */
+  --transition-slow: 1200ms;
+  --transition-medium: 800ms;
+  --transition-fast: 400ms;
+  --breathe-duration: 3.5s;
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-glow: var(--color-glow);
+  --color-surface: var(--color-background);
+  --color-warm: var(--color-text);
+  --color-subtle: var(--color-subtle);
+  --color-particle: var(--color-particle);
+}
+
+/* Base reset */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  height: 100%;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.6;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+/* Safe area handling for iOS */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-area {
+    padding-top: env(safe-area-inset-top, var(--safe-area-top));
+    padding-bottom: env(safe-area-inset-bottom, var(--safe-area-bottom));
+  }
+}
+
+.safe-area {
+  padding-top: var(--safe-area-top);
+  padding-bottom: var(--safe-area-bottom);
+}
+
+/* No scrollbar anywhere */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-background);
+}
+
+/* Focus styling for inputs */
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-accent), 0 0 20px rgba(255, 45, 85, 0.2);
+}
+
+/* Prevent iOS zoom on input focus */
+input,
+textarea {
+  font-size: 16px;
+}

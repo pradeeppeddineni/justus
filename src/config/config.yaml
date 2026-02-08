@@ -1,0 +1,246 @@
+meta:
+  couple_name: "Pradeep & Partner"
+  url_slug: "pradeep-and-partner"
+  valentines_date: "2026-02-14T19:00:00"
+  timezone: "America/New_York"
+
+devices:
+  p1:
+    model: "iphone_15_pro"
+  p2:
+    model: "iphone_15_pro"
+
+theme:
+  primary: "#8B0000"
+  secondary: "#1a0a0a"
+  accent: "#FF2D55"
+  glow: "#FF6B8A"
+  background: "#0D0000"
+  text: "#FFF0F0"
+  font_display: "Playfair Display"
+  font_body: "Cormorant Garamond"
+  particle_color: "#FF2D55"
+  custom_css: ""
+
+acts:
+  enabled:
+    - invitation
+    - the_lock
+    - know_me
+    - lie_detector
+    - through_your_eyes
+    - heartbeat
+    - the_unsaid
+    - rewrite_history
+    - come_closer
+    - heat
+    - our_moment
+    - the_promise
+    - the_glitch
+
+  invitation:
+    teaser_text: "Something is waiting for you. But it can't begin without him."
+
+  the_lock:
+    instruction_p1: "Hold your phone up. Wait for her."
+    instruction_p2: "Hold your phone up. Wait for him."
+    sync_type: "simultaneous_tap"
+
+  know_me:
+    time_per_question: 30
+    questions:
+      - question: "What was I secretly thinking on our first date?"
+        category: "deep"
+      - question: "What's the one song that reminds me of you?"
+        category: "fun"
+      - question: "What am I most afraid of losing?"
+        category: "deep"
+      - question: "If I could relive one day with you, which would I pick?"
+        category: "romantic"
+
+  lie_detector:
+    rounds: 3
+    memories:
+      - real: "That night we danced in the rain on the beach"
+        fake: "That night we danced in the rain at the restaurant"
+        who_tells: "p1"
+      - real: "You cried during Coco and pretended it was allergies"
+        fake: "You cried during Up and pretended it was allergies"
+        who_tells: "p2"
+      - real: "Our first kiss was after that terrible movie"
+        fake: "Our first kiss was after dinner at that Italian place"
+        who_tells: "p1"
+
+  through_your_eyes:
+    canvas_bg: "#0D0000"
+    stroke_color_p1: "#FF2D55"
+    stroke_color_p2: "#FF6B8A"
+    rounds: 2
+    prompt: "Draw what you feel. No words."
+
+  heartbeat:
+    duration: 20
+    sync_animation: "merge"
+
+  the_unsaid:
+    prompt: "Type something you've never said to them."
+    reveal_speed: "slow"
+    particle_count: 200
+
+  rewrite_history:
+    memories:
+      - description: "Our first trip together"
+        image: ""
+        date: "2020-06-15"
+      - description: "The night everything changed"
+        image: ""
+        date: "2021-12-24"
+      - description: "When we knew this was real"
+        image: ""
+        date: "2022-03-10"
+
+  come_closer:
+    prompts:
+      - type: "proximity"
+        instruction: "Put your phones face-down on the table."
+        then: "Now look at each other. Really look. 30 seconds. No talking."
+        duration: 30
+      - type: "touch"
+        instruction: "Both place a finger on your screen."
+        then: "Now slowly move your phones together until they touch."
+        duration: 15
+      - type: "kiss"
+        instruction: "The screen is going dark."
+        then: "Kiss. The app will wait."
+        resume_trigger: "shake"
+      - type: "embrace"
+        instruction: "Put your phones down."
+        then: "Hold each other. The music will tell you when to come back."
+        duration: 60
+
+  heat:
+    mode: "truth_or_strip"
+    intensity: "medium"
+    rounds: 8
+    escalation: "auto"
+    truths:
+      mild:
+        - "What's the most attractive thing about the person in front of you right now?"
+        - "What were you thinking the first time you saw them naked?"
+        - "Describe your favorite physical feature of theirs — without using your hands. Yet."
+      medium:
+        - "What's a fantasy you've never told them about?"
+        - "If you could replay one intimate moment, which one and why?"
+        - "What's the most turned on you've ever been by something they did?"
+      spicy:
+        - "Tell them exactly what you want to do to them tonight. Type it. They'll read it."
+        - "What's something you've always wanted to try but never asked for?"
+        - "Describe in detail your favorite moment of physical intimacy with them."
+      fire:
+        - "What is your dirtiest thought about the person sitting across from you right now?"
+        - "If you could have them do anything to you tonight, what would it be? Be specific."
+        - "Type something so explicit it makes your own face hot. They'll read every word."
+    forfeits:
+      strip:
+        text: "Strip one item. Their choice what comes off."
+        resume: "tap"
+      kiss:
+        prompts:
+          - "Kiss them. Not a peck. A real one. The app will wait."
+          - "Kiss their neck. Slowly. Take your time."
+          - "Kiss them the way you did when you first couldn't keep your hands off each other."
+        resume: "shake"
+      intimate:
+        prompts:
+          mild:
+            - "Whisper something in their ear that would make them blush."
+            - "Run your fingers through their hair for 30 seconds. Eyes closed."
+          medium:
+            - "Trace a word on their skin with your finger. They have to guess it."
+            - "Give them a 60-second massage anywhere they choose."
+          spicy:
+            - "The screen goes dark. You have 2 minutes. Do whatever you want."
+            - "One instruction each. Type it. Then do it. No negotiating."
+          fire:
+            - "The app is done telling you what to do. You know what you want. Go."
+        resume: "shake"
+
+  our_moment:
+    mode: "photo_booth"
+    instructions:
+      p1: "Take a photo. Make it count."
+      p2: "Your turn. Show them who they're with tonight."
+    card_style: "polaroid"
+    card_overlay:
+      text: "{couple_name} • Valentine's 2026"
+      font: "Playfair Display"
+      position: "bottom"
+    frame_options:
+      polaroid:
+        border_color: "#FFF0F0"
+        caption_area: true
+        rotation: "slight"
+      filmstrip:
+        frames: 2
+        sprocket_holes: true
+      splitscreen:
+        split: "diagonal"
+        blend: "soft"
+      collage:
+        layout: "overlap"
+        background: "#0D0000"
+
+  the_promise:
+    star_field_density: 500
+    prompt: "Name your star. One word each."
+    star_save: true
+
+  the_glitch:
+    credits_text:
+      - "Written, coded, and designed with love"
+      - "For the only person who matters"
+      - "Happy Valentine's Day 2026"
+    video_url: "/assets/video/message.mp4"
+
+  ghost:
+    fragments:
+      - act: "the_lock"
+        fragment: "Y"
+        hide_method: "opacity"
+      - act: "know_me"
+        fragment: "O"
+        hide_method: "micro_text"
+      - act: "through_your_eyes"
+        fragment: "U"
+        hide_method: "stroke"
+      - act: "the_unsaid"
+        fragment: " "
+        hide_method: "particle"
+      - act: "the_promise"
+        fragment: "A"
+        hide_method: "star"
+    full_message: "YOU ARE MY UNIVERSE"
+
+  shake_moments:
+    - act: "know_me"
+      trigger_after: "reveal"
+    - act: "heat"
+      trigger_after: "dare"
+
+assets:
+  music:
+    ambient: "/assets/audio/ambient.mp3"
+    heartbeat: "/assets/audio/heartbeat.mp3"
+    finale: "/assets/audio/finale.mp3"
+  fonts:
+    display: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap"
+    body: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap"
+
+export:
+  format: "json"
+  include:
+    - answers
+    - drawings
+    - star_name
+    - unsaid_messages
+    - rewrite_history_answers

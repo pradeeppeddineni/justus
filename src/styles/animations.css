@@ -1,0 +1,164 @@
+/* Reusable keyframes */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 45, 85, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 45, 85, 0.4), 0 0 80px rgba(255, 107, 138, 0.15);
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 45, 85, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 45, 85, 0.5), 0 0 40px rgba(255, 107, 138, 0.2);
+  }
+}
+
+@keyframes particleDrift {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(20px);
+    opacity: 0;
+  }
+}
+
+@keyframes typewriterCursor {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes glitchShift {
+  0%, 100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 1px);
+  }
+  40% {
+    transform: translate(2px, -1px);
+  }
+  60% {
+    transform: translate(-1px, 2px);
+  }
+  80% {
+    transform: translate(1px, -2px);
+  }
+}
+
+@keyframes rgbSplit {
+  0%, 100% {
+    text-shadow: none;
+  }
+  25% {
+    text-shadow: -2px 0 #FF2D55, 2px 0 #00FFFF;
+  }
+  50% {
+    text-shadow: 2px 0 #FF2D55, -2px 0 #00FFFF;
+  }
+  75% {
+    text-shadow: -1px 1px #FF2D55, 1px -1px #00FFFF;
+  }
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.15);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Utility animation classes */
+.animate-breathe {
+  animation: breathe var(--breathe-duration) ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse var(--breathe-duration) ease-in-out infinite;
+}
+
+.animate-text-glow {
+  animation: textGlow var(--breathe-duration) ease-in-out infinite;
+}
+
+.animate-cursor-blink {
+  animation: typewriterCursor 1s step-end infinite;
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.2s ease-in-out infinite;
+}
