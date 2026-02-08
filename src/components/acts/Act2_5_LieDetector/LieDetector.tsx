@@ -60,9 +60,13 @@ export function LieDetector({ config, player, send, onMessage, onComplete }: Lie
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundIndex]);
 
-  // Listen for results
+  // Listen for partner ready + results
   useEffect(() => {
     const unsub = onMessage((msg) => {
+      if (msg.type === 'teller_done' && msg.act === 'lie_detector') {
+        // Teller finished telling — guesser can now choose
+        setPhase('guessing');
+      }
       if (msg.type === 'lie_detector_result') {
         const guess = msg.guess as number;
         const hesitationMs = msg.hesitationMs as number;
@@ -104,9 +108,9 @@ export function LieDetector({ config, player, send, onMessage, onComplete }: Lie
   }, [phase]);
 
   const handleTellerReady = useCallback(() => {
-    send({ type: 'ready', act: 'lie_detector' });
+    send({ type: 'teller_done', act: 'lie_detector', player });
     setPhase('guessing');
-  }, [send]);
+  }, [send, player]);
 
   const handleGuess = useCallback((optionIndex: number) => {
     if (chosenOption !== null) return;

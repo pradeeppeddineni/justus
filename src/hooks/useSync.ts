@@ -35,10 +35,16 @@ export function useSync({ host, room, enabled = true }: UseSyncOptions) {
         setState(prev => ({ ...prev, status }));
       },
       onPlayerAssigned: (player, serverState) => {
+        const state = serverState as Record<string, unknown>;
+        // Check if partner is already connected from server state
+        const players = (state.players ?? {}) as { p1?: boolean; p2?: boolean };
+        const partnerKey = player === 'p1' ? 'p2' : 'p1';
+        const partnerConnected = !!players[partnerKey];
         setState(prev => ({
           ...prev,
           player,
-          serverState: serverState as Record<string, unknown>,
+          partnerConnected,
+          serverState: state,
         }));
       },
       onMessage: (message) => {

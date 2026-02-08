@@ -28,7 +28,7 @@ const MIN_BPM = 40;
 const MAX_BPM = 180;
 const PEAK_THRESHOLD = 0.6; // threshold relative to signal range
 
-export function Heartbeat({ config, send, onMessage, onComplete }: HeartbeatProps) {
+export function Heartbeat({ config, player, send, onMessage, onComplete }: HeartbeatProps) {
   const duration = config.acts.heartbeat.duration;
   const syncAnimation = config.acts.heartbeat.sync_animation;
 
@@ -48,23 +48,30 @@ export function Heartbeat({ config, send, onMessage, onComplete }: HeartbeatProp
   const animRef = useRef<number>(0);
   const myBpmRef = useRef<BpmData | null>(null);
 
+  const partnerBpmRef = useRef<BpmData | null>(null);
+
   // Listen for partner's heartbeat data
   useEffect(() => {
     const unsub = onMessage((msg) => {
-      if (msg.type === 'heartbeat_data') {
-        const data = {
-          bpm: msg.bpm as number,
-          waveform: msg.waveform as number[],
-        };
-        setPartnerBpm(data);
-        // If we already have our own BPM, go straight to reveal
-        if (myBpmRef.current) {
-          setPhase('reveal');
+      if (msg.type === 'heartbeat_reveal') {
+        // Server broadcasts reveal with both players' data
+        const partnerKey = player === 'p1' ? 'p2' : 'p1';
+        const raw = (msg as Record<string, unknown>)[partnerKey] as { bpm: number; waveform: number[] };
+        if (raw) {
+          const data = { bpm: raw.bpm, waveform: raw.waveform };
+          setPartnerBpm(data);
+          partnerBpmRef.current = data;
+          if (myBpmRef.current) {
+            setPhase('reveal');
+          }
         }
+      }
+      if (msg.type === 'partner_heartbeat_ready') {
+        // Partner has submitted, we're still measuring — no action needed
       }
     });
     return unsub;
-  }, [onMessage]);
+  }, [onMessage, player]);
 
   // Phase transitions
   useEffect(() => {
@@ -240,8 +247,8 @@ export function Heartbeat({ config, send, onMessage, onComplete }: HeartbeatProp
     myBpmRef.current = result;
     send({ type: 'heartbeat_data', bpm: result.bpm, waveform: result.waveform });
 
-    setPhase(partnerBpm ? 'reveal' : 'waiting');
-  }, [send, partnerBpm]);
+    setPhase(partnerBpmRef.current ? 'reveal' : 'waiting');
+  }, [send]);
 
   // Draw live waveform
   useEffect(() => {

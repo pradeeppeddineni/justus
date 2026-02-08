@@ -46,9 +46,17 @@ export function TheUnsaid({ config, player, send, onMessage, onComplete }: TheUn
 
   const dissolveCanvasRef = useRef<HTMLCanvasElement>(null);
   const reformCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [reformCanvasReady, setReformCanvasReady] = useState(false);
   const dissolveParticlesRef = useRef<TextParticle[]>([]);
   const reformParticlesRef = useRef<TextParticle[]>([]);
-  const animRef = useRef<number>(0);
+  const dissolveAnimRef = useRef<number>(0);
+  const reformAnimRef = useRef<number>(0);
+
+  // Callback ref to detect when reform canvas actually mounts (after AnimatePresence exit)
+  const reformCanvasCallback = useCallback((node: HTMLCanvasElement | null) => {
+    reformCanvasRef.current = node;
+    setReformCanvasReady(!!node);
+  }, []);
 
   // Speed multiplier based on config
   const speedMultiplier = useMemo(() => {
@@ -265,19 +273,18 @@ export function TheUnsaid({ config, player, send, onMessage, onComplete }: TheUn
       });
 
       if (progress < 1) {
-        animRef.current = requestAnimationFrame(animate);
+        dissolveAnimRef.current = requestAnimationFrame(animate);
       } else {
-        // Dissolve complete
-        if (!partnerMessage) {
-          setPhase('waiting');
-        }
+        // Dissolve complete — go to waiting (separate effect handles transition to reforming)
+        setPhase('waiting');
       }
     };
 
-    animRef.current = requestAnimationFrame(animate);
+    dissolveAnimRef.current = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(animRef.current);
-  }, [phase, myMessage, generateTextParticles, speedMultiplier, partnerMessage]);
+    return () => cancelAnimationFrame(dissolveAnimRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, myMessage, generateTextParticles, speedMultiplier]);
 
   // Reform animation — partner's message assembles from particles
   useEffect(() => {
@@ -352,7 +359,7 @@ export function TheUnsaid({ config, player, send, onMessage, onComplete }: TheUn
       });
 
       if (progress < 1) {
-        animRef.current = requestAnimationFrame(animate);
+        reformAnimRef.current = requestAnimationFrame(animate);
       } else {
         setPhase('revealed');
       }
@@ -360,18 +367,21 @@ export function TheUnsaid({ config, player, send, onMessage, onComplete }: TheUn
 
     // Small delay before starting
     const timeout = setTimeout(() => {
-      animRef.current = requestAnimationFrame(animate);
+      reformAnimRef.current = requestAnimationFrame(animate);
     }, 300);
 
     return () => {
       clearTimeout(timeout);
-      cancelAnimationFrame(animRef.current);
+      cancelAnimationFrame(reformAnimRef.current);
     };
-  }, [phase, partnerMessage, generateTextParticles, speedMultiplier]);
+  }, [phase, partnerMessage, generateTextParticles, speedMultiplier, reformCanvasReady]);
 
   // Cleanup
   useEffect(() => {
-    return () => cancelAnimationFrame(animRef.current);
+    return () => {
+      cancelAnimationFrame(dissolveAnimRef.current);
+      cancelAnimationFrame(reformAnimRef.current);
+    };
   }, []);
 
   const handleSubmit = useCallback((text: string) => {
@@ -537,7 +547,7 @@ export function TheUnsaid({ config, player, send, onMessage, onComplete }: TheUn
               className="absolute inset-0 flex flex-col items-center justify-center"
             >
               <canvas
-                ref={reformCanvasRef}
+                ref={reformCanvasCallback}
                 className="absolute inset-0 w-full h-full"
               />
 

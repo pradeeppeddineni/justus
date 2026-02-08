@@ -34,13 +34,11 @@ export function Invitation({ config, onReady }: InvitationProps) {
     }
   }, [charIndex, teaserText]);
 
-  // If past valentine's date, auto-advance after showing teaser
+  // Auto-advance after showing teaser
   useEffect(() => {
-    if (isPast) {
-      const timeout = setTimeout(onReady, 3000);
-      return () => clearTimeout(timeout);
-    }
-  }, [isPast, onReady]);
+    const timeout = setTimeout(onReady, 3000);
+    return () => clearTimeout(timeout);
+  }, [onReady]);
 
   const diff = targetDate.getTime() - now.getTime();
   const days = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));

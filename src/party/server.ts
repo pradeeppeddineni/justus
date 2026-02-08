@@ -30,6 +30,12 @@ interface DrawStrokeMessage {
   color: string;
 }
 
+interface RoundDoneMessage {
+  type: 'round_done';
+  player: PlayerId;
+  round: number;
+}
+
 interface HeartbeatDataMessage {
   type: 'heartbeat_data';
   bpm: number;
@@ -50,6 +56,11 @@ interface TypingMessage {
 interface ProximityMessage {
   type: 'proximity';
   distance: number;
+}
+
+interface AdvanceMessage {
+  type: 'advance';
+  next_act: string;
 }
 
 interface ExportRequestMessage {
@@ -89,6 +100,12 @@ interface RewriteAnswerMessage {
   answer: string;
 }
 
+interface TellerDoneMessage {
+  type: 'teller_done';
+  act: string;
+  player: PlayerId;
+}
+
 interface LieDetectorGuessMessage {
   type: 'lie_detector_guess';
   player: PlayerId;
@@ -100,6 +117,7 @@ interface LieDetectorGuessMessage {
 type SyncMessage =
   | JoinMessage
   | ReadyMessage
+  | AdvanceMessage
   | AnswerMessage
   | DrawStrokeMessage
   | HeartbeatDataMessage
@@ -112,6 +130,8 @@ type SyncMessage =
   | StarWordMessage
   | UnsaidMessage
   | RewriteAnswerMessage
+  | RoundDoneMessage
+  | TellerDoneMessage
   | LieDetectorGuessMessage;
 
 // Room state shape
@@ -161,11 +181,13 @@ export default class JustUsServer implements Party.Server {
   state: RoomState;
   rateLimits: Map<string, { count: number; resetAt: number }>;
   disconnectTimers: Map<string, ReturnType<typeof setTimeout>>;
+  roundDonePlayers: Set<PlayerId>;
 
   constructor(readonly room: Party.Room) {
     this.state = this.createInitialState();
     this.rateLimits = new Map();
     this.disconnectTimers = new Map();
+    this.roundDonePlayers = new Set();
   }
 
   private createInitialState(): RoomState {
@@ -398,12 +420,20 @@ export default class JustUsServer implements Party.Server {
         this.handleReady(player, message.act);
         break;
 
+      case 'advance':
+        this.handleAdvance(player, message.next_act);
+        break;
+
       case 'answer':
         this.handleAnswer(player, message.act, message.data);
         break;
 
       case 'draw_stroke':
         this.handleDrawStroke(player, message.points, message.color);
+        break;
+
+      case 'round_done':
+        this.handleRoundDone(player, message.round);
         break;
 
       case 'heartbeat_data':
@@ -442,6 +472,10 @@ export default class JustUsServer implements Party.Server {
         this.handleRewriteAnswer(player, message.memoryIndex, message.answer);
         break;
 
+      case 'teller_done':
+        this.sendToOther(player, { type: 'teller_done', act: message.act, player });
+        break;
+
       case 'lie_detector_guess':
         this.handleLieDetectorGuess(player, message.round, message.guess, message.hesitationMs);
         break;
@@ -453,6 +487,16 @@ export default class JustUsServer implements Party.Server {
       default:
         sender.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
     }
+  }
+
+  private handleAdvance(player: PlayerId, nextAct: string) {
+    // Validate the act exists in the default order
+    if (!DEFAULT_ACT_ORDER.includes(nextAct)) return;
+    this.state.currentAct = nextAct;
+    this.state.actPhase = 'waiting';
+    this.state.readyPlayers = new Set();
+    // Relay to other player
+    this.sendToOther(player, { type: 'advance', next_act: nextAct });
   }
 
   private handleReady(player: PlayerId, act: string) {
@@ -482,8 +526,20 @@ export default class JustUsServer implements Party.Server {
         act,
         answers: this.state.answers[act],
       });
+      // Reset for next round (multi-question acts like know_me)
+      this.state.answers[act] = { p1: null, p2: null };
     } else {
       this.sendToOther(player, { type: 'partner_answered', act });
+    }
+  }
+
+  private handleRoundDone(player: PlayerId, round: number) {
+    this.roundDonePlayers.add(player);
+    if (this.roundDonePlayers.has('p1') && this.roundDonePlayers.has('p2')) {
+      this.roundDonePlayers = new Set();
+      this.broadcast({ type: 'round_complete', round });
+    } else {
+      this.sendToOther(player, { type: 'partner_round_done', round });
     }
   }
 

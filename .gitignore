@@ -27,6 +27,13 @@ dist-ssr
 # PWA dev
 dev-dist/
 
+# PartyKit local state
+.partykit/
+
+# Playwright test artifacts
+test-results/
+e2e/screenshots/
+
 # Personal assets (add back selectively)
 src/assets/video/*.mp4
 src/assets/memories/*.jpg

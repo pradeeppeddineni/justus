@@ -22,12 +22,20 @@ export function OurMoment({ config, player, send, onMessage, onComplete }: OurMo
   const [myPhoto, setMyPhoto] = useState<string | null>(null);
   const [partnerPhoto, setPartnerPhoto] = useState<string | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoMounted, setVideoMounted] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const myPhotoRef = useRef<string | null>(null);
 
   const instruction = momentConfig.instructions[player];
+
+  // Callback ref to detect when video element mounts (after AnimatePresence exit)
+  const videoCallbackRef = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    setVideoMounted(!!node);
+  }, []);
 
   // Listen for partner's photo
   useEffect(() => {
@@ -51,42 +59,42 @@ export function OurMoment({ config, player, send, onMessage, onComplete }: OurMo
     }
   }, [phase]);
 
-  // Start camera
-  useEffect(() => {
-    if (phase !== 'camera') return;
-
-    const startCamera = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
-          audio: false,
-        });
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-          setCameraReady(true);
-        }
-      } catch {
-        // Camera denied — use placeholder
+  // Start camera — depends on videoMounted to re-run after AnimatePresence exit
+  const startCamera = useCallback(async () => {
+    setCameraError(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
         setCameraReady(true);
       }
-    };
+    } catch {
+      setCameraError(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (phase !== 'camera' || !videoMounted) return;
 
     startCamera();
 
     return () => {
       streamRef.current?.getTracks().forEach(t => t.stop());
     };
-  }, [phase]);
+  }, [phase, videoMounted, startCamera]);
 
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || !video.videoWidth) return;
 
-    canvas.width = video.videoWidth || 1080;
-    canvas.height = video.videoHeight || 1920;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -217,7 +225,7 @@ export function OurMoment({ config, player, send, onMessage, onComplete }: OurMo
 
               <div className="relative w-full overflow-hidden rounded-sm" style={{ aspectRatio: '3/4' }}>
                 <video
-                  ref={videoRef}
+                  ref={videoCallbackRef}
                   playsInline
                   muted
                   className="w-full h-full object-cover"
@@ -227,7 +235,18 @@ export function OurMoment({ config, player, send, onMessage, onComplete }: OurMo
 
               <canvas ref={canvasRef} className="hidden" />
 
-              {cameraReady && (
+              {cameraError && (
+                <div className="flex flex-col items-center gap-4">
+                  <p className="text-small text-warm text-center" style={{ opacity: 0.6 }}>
+                    Camera access is needed for this moment.
+                  </p>
+                  <PulseButton onClick={startCamera}>
+                    allow camera
+                  </PulseButton>
+                </div>
+              )}
+
+              {cameraReady && !cameraError && (
                 <PulseButton onClick={capturePhoto}>
                   capture
                 </PulseButton>
