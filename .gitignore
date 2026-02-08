@@ -39,3 +39,4 @@ src/assets/video/*.mp4
 src/assets/memories/*.jpg
 src/assets/memories/*.png
 src/assets/audio/*.mp3
+.vercel

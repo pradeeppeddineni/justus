@@ -106,13 +106,16 @@ export default function App({ config }: AppProps) {
 
   // Render the current act component
   const renderAct = () => {
+    // Invitation doesn't need player assignment — render it immediately
+    if (currentAct === 'invitation') {
+      return <Invitation config={config} onReady={advanceAct} />;
+    }
+
     if (!player) return null;
 
     const actProps = { config, player, send, onMessage, onComplete: advanceAct };
 
     switch (currentAct) {
-      case 'invitation':
-        return <Invitation config={config} onReady={advanceAct} />;
       case 'the_lock':
         return <TheLock {...actProps} />;
       case 'know_me':
