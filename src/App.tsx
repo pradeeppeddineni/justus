@@ -1,12 +1,14 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import type { JustUsConfig } from './config/types';
 import { useSync } from './hooks/useSync';
 import { useAct } from './hooks/useAct';
+import { useAmbient } from './hooks/useAmbient';
 import { FullscreenWrapper } from './components/Shell/FullscreenWrapper';
 import { TransitionLayer } from './components/Shell/TransitionLayer';
 import { ConnectionScreen } from './components/Shell/ConnectionScreen';
 import { ProgressDots } from './components/Shell/ProgressDots';
 import { GhostFragment } from './components/Shell/GhostFragment';
+import { ShakeReveal } from './components/Shell/ShakeReveal';
 import type { ActPhase } from './core/StateMachine';
 
 // Act components
@@ -23,6 +25,7 @@ import { Heat } from './components/acts/Act5_5_Heat/Heat';
 import { OurMoment } from './components/acts/Act5_75_OurMoment/OurMoment';
 import { ThePromise } from './components/acts/Act6_ThePromise/ThePromise';
 import { TheGlitch } from './components/acts/Act7_TheGlitch/TheGlitch';
+import { SaveScreen } from './components/acts/SaveScreen/SaveScreen';
 
 interface AppProps {
   config: JustUsConfig;
@@ -53,6 +56,11 @@ export default function App({ config }: AppProps) {
     getTotalActs,
   } = useAct({ enabledActs: config.acts.enabled });
 
+  const [showSaveScreen, setShowSaveScreen] = useState(false);
+
+  // Ambient music — crossfades between moods per act
+  useAmbient(currentAct);
+
   // Sync state from server messages
   useEffect(() => {
     const unsub = onMessage((msg) => {
@@ -79,7 +87,7 @@ export default function App({ config }: AppProps) {
     send({ type: 'ready', act: currentAct });
   }, [send, currentAct]);
 
-  // Advance to the next act
+  // Advance to the next act, or show save screen if all done
   const advanceAct = useCallback(() => {
     const acts = config.acts.enabled;
     const idx = acts.indexOf(currentAct);
@@ -87,6 +95,9 @@ export default function App({ config }: AppProps) {
       const nextAct = acts[idx + 1];
       send({ type: 'advance', next_act: nextAct });
       setAct(nextAct);
+    } else {
+      // All acts complete — show keepsakes
+      setShowSaveScreen(true);
     }
   }, [config.acts.enabled, currentAct, send, setAct]);
 
@@ -141,16 +152,31 @@ export default function App({ config }: AppProps) {
         <ConnectionScreen status={status} partnerConnected={partnerConnected} />
       )}
 
-      <TransitionLayer actKey={currentAct}>
-        <div className="relative w-full h-full">
-          {renderAct()}
+      {showSaveScreen ? (
+        <SaveScreen config={config} />
+      ) : (
+        <TransitionLayer actKey={currentAct}>
+          <div className="relative w-full h-full">
+            {renderAct()}
 
-          {/* Ghost fragment for current act */}
-          {ghostFragment && <GhostFragment fragment={ghostFragment} />}
-        </div>
-      </TransitionLayer>
+            {/* Ghost fragment for current act */}
+            {ghostFragment && <GhostFragment fragment={ghostFragment} />}
+          </div>
+        </TransitionLayer>
+      )}
 
-      <ProgressDots totalActs={getTotalActs()} currentIndex={getActIndex()} />
+      {!showSaveScreen && (
+        <ProgressDots totalActs={getTotalActs()} currentIndex={getActIndex()} />
+      )}
+
+      {/* Shake-to-reveal bonus content */}
+      {config.acts.shake_moments && (
+        <ShakeReveal
+          currentAct={currentAct}
+          currentPhase={actPhase}
+          shakeMoments={config.acts.shake_moments}
+        />
+      )}
 
       {/* Dev info — remove before production */}
       {import.meta.env.DEV && (
