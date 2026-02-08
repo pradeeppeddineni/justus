@@ -1,0 +1,5 @@
+{
+  "name": "justus",
+  "main": "src/party/server.ts",
+  "compatibilityDate": "2024-09-01"
+}
