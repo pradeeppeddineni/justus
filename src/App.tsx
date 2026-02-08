@@ -9,14 +9,20 @@ import { ProgressDots } from './components/Shell/ProgressDots';
 import { GhostFragment } from './components/Shell/GhostFragment';
 import type { ActPhase } from './core/StateMachine';
 
-// Placeholder act components — replaced as each act is built
-function ActPlaceholder({ name }: { name: string }) {
-  return (
-    <div className="h-full w-full flex items-center justify-center">
-      <p className="font-display text-warm text-title animate-breathe">{name}</p>
-    </div>
-  );
-}
+// Act components
+import { Invitation } from './components/acts/Act0_Invitation/Invitation';
+import { TheLock } from './components/acts/Act1_TheLock/TheLock';
+import { KnowMe } from './components/acts/Act2_KnowMe/KnowMe';
+import { LieDetector } from './components/acts/Act2_5_LieDetector/LieDetector';
+import { ThroughYourEyes } from './components/acts/Act3_ThroughYourEyes/ThroughYourEyes';
+import { Heartbeat } from './components/acts/Act3_5_Heartbeat/Heartbeat';
+import { TheUnsaid } from './components/acts/Act4_TheUnsaid/TheUnsaid';
+import { RewriteHistory } from './components/acts/Act4_5_RewriteHistory/RewriteHistory';
+import { ComeCloser } from './components/acts/Act5_ComeCloser/ComeCloser';
+import { Heat } from './components/acts/Act5_5_Heat/Heat';
+import { OurMoment } from './components/acts/Act5_75_OurMoment/OurMoment';
+import { ThePromise } from './components/acts/Act6_ThePromise/ThePromise';
+import { TheGlitch } from './components/acts/Act7_TheGlitch/TheGlitch';
 
 interface AppProps {
   config: JustUsConfig;
@@ -73,38 +79,56 @@ export default function App({ config }: AppProps) {
     send({ type: 'ready', act: currentAct });
   }, [send, currentAct]);
 
+  // Advance to the next act
+  const advanceAct = useCallback(() => {
+    const acts = config.acts.enabled;
+    const idx = acts.indexOf(currentAct);
+    if (idx < acts.length - 1) {
+      const nextAct = acts[idx + 1];
+      send({ type: 'advance', next_act: nextAct });
+      setAct(nextAct);
+    }
+  }, [config.acts.enabled, currentAct, send, setAct]);
+
   // Find ghost fragment for current act
   const ghostFragment = config.acts.ghost?.fragments.find(f => f.act === currentAct);
 
   // Render the current act component
   const renderAct = () => {
-    // Check if before valentines date — show invitation
-    const valentinesDate = new Date(config.meta.valentines_date);
-    if (currentAct === 'invitation' && new Date() < valentinesDate) {
-      return <ActPlaceholder name="The Invitation" />;
+    if (!player) return null;
+
+    const actProps = { config, player, send, onMessage, onComplete: advanceAct };
+
+    switch (currentAct) {
+      case 'invitation':
+        return <Invitation config={config} onReady={advanceAct} />;
+      case 'the_lock':
+        return <TheLock {...actProps} />;
+      case 'know_me':
+        return <KnowMe {...actProps} />;
+      case 'lie_detector':
+        return <LieDetector {...actProps} />;
+      case 'through_your_eyes':
+        return <ThroughYourEyes {...actProps} />;
+      case 'heartbeat':
+        return <Heartbeat {...actProps} />;
+      case 'the_unsaid':
+        return <TheUnsaid {...actProps} />;
+      case 'rewrite_history':
+        return <RewriteHistory {...actProps} />;
+      case 'come_closer':
+        return <ComeCloser {...actProps} />;
+      case 'heat':
+        return <Heat {...actProps} />;
+      case 'our_moment':
+        return <OurMoment {...actProps} />;
+      case 'the_promise':
+        return <ThePromise {...actProps} />;
+      case 'the_glitch':
+        return <TheGlitch config={config} player={player} onComplete={advanceAct} />;
+      default:
+        return null;
     }
-
-    // Map act names to placeholder components for now
-    // Each will be replaced with the real component as built
-    const actNames: Record<string, string> = {
-      invitation: 'The Invitation',
-      the_lock: 'The Lock',
-      know_me: 'How Well Do You Know Me',
-      lie_detector: 'The Lie Detector',
-      through_your_eyes: 'Through Your Eyes',
-      heartbeat: 'Heartbeat',
-      the_unsaid: 'The Unsaid',
-      rewrite_history: 'Rewrite History',
-      come_closer: 'Come Closer',
-      heat: 'Heat',
-      our_moment: 'Our Moment',
-      the_promise: 'The Promise',
-      the_glitch: 'The Glitch',
-    };
-
-    return (
-      <ActPlaceholder name={actNames[currentAct] ?? currentAct} />
-    );
   };
 
   // Show connection screen if not both connected (skip for invitation which is solo)
